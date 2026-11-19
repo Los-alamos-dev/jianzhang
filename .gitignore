@@ -1,0 +1,10 @@
+# Android build output / signing material
+ledger-android/dist/
+ledger-android/keystore/
+*.idsig
+
+# Local / editor
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f4f1ea" />
+    <meta
+      name="description"
+      content="简账：一个只做记账的本地小工具。数据只存在你的浏览器里。"
+    />
+    <title>简账 · 把每一笔记得清楚一点</title>
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">账</div>
+          <div class="brand-copy">
+            <h1>简账</h1>
+            <p>把每一笔，记得清楚一点</p>
+          </div>
+        </div>
+        <div class="top-actions">
+          <button class="ghost-btn" id="btn-export" type="button" title="导出 JSON 备份">导出</button>
+          <button class="ghost-btn" id="btn-import" type="button" title="导入 JSON 备份">导入</button>
+          <input id="file-import" type="file" accept="application/json,.json" hidden />
+        </div>
+      </header>
+
+      <main class="layout">
+        <div class="left-column">
+          <section class="summary-card" aria-labelledby="summary-title">
+            <div class="summary-top">
+              <div>
+                <p class="eyebrow" id="summary-title">本月结余</p>
+                <p class="summary-balance" id="summary-balance">¥0.00</p>
+              </div>
+              <div class="month-nav" aria-label="选择月份">
+                <button class="month-arrow" id="prev-month" type="button" aria-label="上个月">‹</button>
+                <input id="month-input" type="month" aria-label="月份" />
+                <button class="month-arrow" id="next-month" type="button" aria-label="下个月">›</button>
+              </div>
+            </div>
+
+            <div class="summary-split">
+              <div>
+                <span>支出</span>
+                <strong id="summary-expense">¥0.00</strong>
+              </div>
+              <div>
+                <span>收入</span>
+                <strong id="summary-income">¥0.00</strong>
+              </div>
+            </div>
+
+            <div class="summary-foot">
+              <span id="summary-count">0 笔记录</span>
+              <button class="text-btn light" id="btn-today" type="button">回到本月</button>
+            </div>
+          </section>
+
+          <section class="card entry-card" aria-labelledby="form-title">
+            <div class="card-head">
+              <div>
+                <p class="eyebrow" id="form-eyebrow">记一笔</p>
+                <h2 id="form-title">今天花了什么？</h2>
+              </div>
+              <button class="text-btn" id="btn-cancel-edit" type="button" hidden>取消编辑</button>
+            </div>
+
+            <form id="entry-form" novalidate>
+              <div class="type-switch" role="group" aria-label="收支类型">
+                <button type="button" data-type="expense" class="active">支出</button>
+                <button type="button" data-type="income">收入</button>
+              </div>
+
+              <label class="amount-field">
+                <span class="field-label">金额</span>
+                <span class="amount-wrap">
+                  <span class="currency-mark">¥</span>
+                  <input
+                    id="amount"
+                    inputmode="decimal"
+                    autocomplete="off"
+                    placeholder="0.00"
+                    aria-label="金额"
+                  />
+                </span>
+              </label>
+
+              <div class="field">
+                <span class="field-label">分类</span>
+                <div class="category-picker" id="category-picker" role="group" aria-label="分类"></div>
+              </div>
+
+              <div class="form-row">
+                <label class="field">
+                  <span class="field-label">日期</span>
+                  <input id="date" type="date" />
+                </label>
+                <label class="field">
+                  <span class="field-label">备注</span>
+                  <input id="note" maxlength="60" placeholder="可选，例如：午饭" />
+                </label>
+              </div>
+
+              <p class="form-error" id="form-error" role="alert"></p>
+              <button class="primary-btn" id="submit-btn" type="submit">记下来</button>
+            </form>
+          </section>
+        </div>
+
+        <div class="right-column">
+          <section class="card list-toolbar" aria-label="筛选账目">
+            <div class="filter-row">
+              <div class="segmented small" id="filter-type" role="group" aria-label="按类型筛选">
+                <button type="button" data-filter="all" class="active">全部</button>
+                <button type="button" data-filter="expense">支出</button>
+                <button type="button" data-filter="income">收入</button>
+              </div>
+              <label class="select-field">
+                <span class="sr-only">按分类筛选</span>
+                <select id="filter-category">
+                  <option value="all">全部分类</option>
+                </select>
+              </label>
+              <label class="search-field">
+                <span class="sr-only">搜索</span>
+                <input id="search" type="search" placeholder="搜备注或分类" autocomplete="off" />
+              </label>
+            </div>
+            <div class="list-meta">
+              <span id="list-range"></span>
+              <span id="list-total"></span>
+            </div>
+          </section>
+
+          <div id="entry-list" class="entry-list" aria-live="polite"></div>
+
+          <section id="empty-state" class="card empty-state" hidden>
+            <div class="empty-icon" aria-hidden="true">✦</div>
+            <h2 id="empty-title">还没有账目</h2>
+            <p id="empty-text">从上面记下第一笔，或者先看看示例数据。</p>
+            <div class="empty-actions">
+              <button class="primary-btn compact" id="empty-action" type="button">记第一笔</button>
+              <button class="text-btn" id="empty-demo" type="button">载入示例数据</button>
+            </div>
+          </section>
+
+          <section class="card breakdown-card" aria-labelledby="breakdown-title">
+            <div class="card-head">
+              <div>
+                <p class="eyebrow">支出分布</p>
+                <h2 id="breakdown-title">钱花在哪了</h2>
+              </div>
+            </div>
+            <div class="breakdown-list" id="breakdown"></div>
+          </section>
+        </div>
+      </main>
+
+      <footer class="footer">
+        <span>数据只保存在这台设备的浏览器里</span>
+        <span class="footer-dot" aria-hidden="true">·</span>
+        <span>记得定期导出备份</span>
+      </footer>
+    </div>
+
+    <dialog class="confirm-dialog" id="confirm-dialog" aria-labelledby="confirm-title">
+      <div class="confirm-inner">
+        <div class="confirm-icon" aria-hidden="true">!</div>
+        <h2 id="confirm-title">删除这笔记录？</h2>
+        <p id="confirm-text">删除后不能恢复，建议先导出备份。</p>
+        <div class="confirm-actions">
+          <button class="ghost-btn" id="confirm-cancel" type="button">取消</button>
+          <button class="danger-btn" id="confirm-delete" type="button">删除</button>
+        </div>
+      </div>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
